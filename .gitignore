@@ -10,3 +10,5 @@ venv/
 
 # dotenv
 .env
+
+./test_data

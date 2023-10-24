@@ -7,5 +7,5 @@ health_api = Blueprint('health', __name__)
 
 @health_api.route('/health', methods=['POST'])
 def health():
-    _ = get_jwt()
+    data = get_jwt()
     return jsonify_data({'status': 'ok'})

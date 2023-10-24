@@ -1,3 +1,5 @@
+from jwt import PyJWKClient
+import jwt as pyjwt
 from authlib.jose import jwt
 from authlib.jose.errors import DecodeError, BadSignatureError
 from flask import request, current_app, jsonify
@@ -43,7 +45,22 @@ def get_jwt():
     }
     token = get_auth_token()
     try:
-        return jwt.decode(token, current_app.config['SECRET_KEY'])['key']
+        jwks_host = pyjwt.decode(token, options={'verify_signature': False})
+        svc_act = {
+          "type": "service_account",
+          "project_id": jwks_host['project_id'],
+          "private_key_id": jwks_host['private_key_id'],
+          "private_key": jwks_host['private_key'].replace('\\n', '\n'),
+          "client_email": jwks_host['client_email'],
+          "client_id": jwks_host['client_id'],
+          "auth_uri": jwks_host['auth_uri'],
+          "token_uri": jwks_host['token_uri'],
+          "auth_provider_x509_cert_url": jwks_host['auth_provider_x509_cert_url'],
+          "client_x509_cert_url": jwks_host['client_x509_cert_url'],
+          "universe_domain": jwks_host['universe_domain']
+        }
+        return {'service_account': svc_act, 'delegated_email': jwks_host['delegated_email'],
+                'internal_domains': jwks_host['internal_domains']}
     except tuple(expected_errors) as error:
         raise AuthorizationError(expected_errors[error.__class__])
 
@@ -66,7 +83,6 @@ def get_json(schema):
         raise InvalidArgumentError(message)
 
     return data
-
 
 def jsonify_data(data):
     return jsonify({'data': data})
