@@ -11,4 +11,4 @@ venv/
 # dotenv
 .env
 
-./test_data
+test_data/
